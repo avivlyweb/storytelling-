@@ -17,11 +17,23 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 llm = OpenAI(temperature=0.9)
 
 def generate_story(text):
-    """Generate a story using the langchain library and OpenAI's GPT-3 model."""
+    """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
     prompt = PromptTemplate(
         input_variables=["text"],
         template=""" 
-         You are a fun and seasoned storyteller. Generate a story for me about {text}.
+        You are an AI assistant with expertise in physiotherapy. Generate a case study related to {text}. The case study should include the following sections:
+
+        1. Patient Profile: Provide a brief introduction to the patient, including demographic information, medical history, and the reason for seeking physiotherapy.
+
+        2. Assessment: Describe the process of assessing the patient's condition, including any tests or measurements performed.
+
+        3. Diagnosis: Based on the assessment, provide a diagnosis for the patient's condition.
+
+        4. Treatment Plan: Outline a comprehensive treatment plan for the patient, including specific exercises, therapy modalities, and lifestyle recommendations.
+
+        5. Expected Outcomes: Discuss the expected outcomes and goals of the treatment plan, including any potential challenges or barriers to success.
+
+        6. Follow-up and Monitoring: Describe how the patient's progress will be monitored and any necessary adjustments to the treatment plan.
                  """
     )
     story = LLMChain(llm=llm, prompt=prompt)
@@ -44,14 +56,14 @@ def generate_images(story_text):
 
 
 def app():
-    st.title("Story Storm")
+    st.title("ESPCharlie the story teller")
 
     with st.form(key='my_form'):
         text = st.text_input(
             "Enter a word to generate a story",
             max_chars=None,
             type="default",
-            placeholder="Enter a word to generate a story",
+            placeholder="Enter a case study subject to generate a Physiotherapy case study",
         )
         options = ["Bella", "Antoni", "Arnold", "Adam", "Domi", "Elli", "Josh", "Rachel", "Sam"]
         voice = st.selectbox("Select a voice", options)
