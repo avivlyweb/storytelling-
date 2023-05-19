@@ -1,4 +1,6 @@
+
 import os
+
 import replicate
 import streamlit as st
 from dotenv import load_dotenv
@@ -19,62 +21,20 @@ def generate_story(text):
     prompt = PromptTemplate(
         input_variables=["text"],
         template=""" 
-        Your Task is to be an expert AI Physiotherapist named Charlie with a 250 years career experience and to write a As Charlie the AI HOAC Model, my tasks will include the following:
+        You are an AI assistant with expertise in physiotherapy. Generate a case study related to {text}. The case study should include the following sections:
 
-        Step 1: Brief Introduction of the Patient Scenario
+        1. Patient Profile: Provide a brief introduction to the patient, including demographic information, medical history, and the reason for seeking physiotherapy.
 
-        Collect personal information about the patient, including age, gender, and medical history.
-        Review relevant literature, guidelines, and other evidence-based sources to put the patient's medical information into context.
-        Develop a brief introduction that summarizes the patient's history and current condition.
+        2. Assessment: Describe the process of assessing the patient's condition, including any tests or measurements performed.
 
-        Step 2: Interview and Problem List
+        3. Diagnosis: Based on the assessment, provide a diagnosis for the patient's condition.
 
-        Fill out a RPS form with all relevant information and add it to the report (Patient: Age: Occupation: Date: Disease: Operation: Medication: Referral: BODY FUNCTIONS ACTIVITIES PARTICIPATION, Personal factors, Environmental factors).
-        Conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
-        Include health-seeking questions (HSQ) to further understand the patient's history and symptoms.
-        State the PIPs and NPIPs in this case.
-        Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
+        4. Treatment Plan: Outline a comprehensive treatment plan for the patient, including specific exercises, therapy modalities, and lifestyle recommendations.
 
-        Step 3: Assessment Strategy
+        5. Expected Outcomes: Discuss the expected outcomes and goals of the treatment plan, including any potential challenges or barriers to success.
 
-        Identify specific assessment goals for the patient based on the information gathered during the interview and problem list.
-        Determine the appropriate assessment strategy, including basic testing (e.g., vital signs, physical exam), special testing (e.g., laboratory tests, imaging studies), functional testing (e.g., activities of daily living), and muscle testing (e.g., manual muscle testing).
-
-        Step 4: Assessment Findings
-
-        Fill in a table with the tests and outcomes to facilitate comparison and analysis.
-        Record assessment findings, including tests and expected outcomes.
-        Tests     Outcomes
-        1
-        2
-        3
-        4
-
-        Step 5: Goals/Actions to Take
-
-        Formulate SMART goals for the patient, including one long-term goal and two short-term goals that are connected to each other.
-        Determine appropriate actions to take to achieve these goals.
-        Consider the patient's values and preferences when formulating the goals and actions.
-
-        Step 6: Intervention Plan
-
-        Develop a comprehensive intervention plan that is evidence-based and tailored to the patient's specific needs and goals.
-        Include pharmacological and non-pharmacological interventions as appropriate.
-        Specify the FITT parameters (frequency, intensity, time, and type) for exercise interventions.
-        Include specific details on how to administer each intervention and how it will be monitored.
-
-        Step 7: Reassessment
-
-        Identify when and how to evaluate the effectiveness of the intervention plan.
-        Schedule follow-up appointments with the patient to monitor symptoms, lung function, and quality of life.
-        Consider using standardized outcome measures to assess the effectiveness of the intervention plan.
-
-        Explanation and Justification of Choices:
-
-        Explain and justify the choices made in each step of the HOAC model.
-        Integrate evidence from relevant literature, guidelines, and other sources to support the choices made.
-        Consider the patient's values and preferences when justifying the choices made.
-        """
+        6. Follow-up and Monitoring: Describe how the patient's progress will be monitored and any necessary adjustments to the treatment plan.
+                 """
     )
     story = LLMChain(llm=llm, prompt=prompt)
     return story.run(text=text)
