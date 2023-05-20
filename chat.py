@@ -1,6 +1,5 @@
-import os 
-import base64
-from fpdf import FPDF
+import os
+
 import replicate
 import streamlit as st
 from dotenv import load_dotenv
@@ -16,19 +15,16 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
 llm = OpenAI(temperature=0.9)
 
-def generate_story(full_text):
+def generate_story(text):
     """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
-    main_text, variables_text = full_text.split(". Variables: ") if ". Variables: " in full_text else (full_text, "")
     prompt = PromptTemplate(
-        input_variables=["main_text", "variables_text"],
+        input_variables=["text"],
         template=""" 
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {main_text}.
-
-        Information available: {variables_text}
+        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
         
         Step 1: Brief Introduction of the Patient Scenario
         Collect personal information about the patient, including age, gender, and medical history.
-
+        
         Step 2: Interview and Problem List
         Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
         Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
@@ -53,12 +49,14 @@ def generate_story(full_text):
                  """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(main_text=main_text, variables_text=variables_text)
+    return story.run(text=text)
+
 
 def generate_audio(text, voice):
     """Convert the generated story to audio using the Eleven Labs API."""
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
+
 
 def generate_images(story_text):
     """Generate images using the story text using the Replicate API."""
@@ -68,9 +66,6 @@ def generate_images(story_text):
     )
     return output
 
-def create_download_link(val, filename):
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
 
 def app():
     st.title("ESPCharlie the story teller")
@@ -82,26 +77,12 @@ def app():
             type="default",
             placeholder="Enter a case study subject to generate a Physiotherapy case study",
         )
-        age = st.checkbox("Include patient's age")
-        gender = st.checkbox("Include patient's gender")
-        problem = st.checkbox("Include patient's presenting problem")
-        medical_history = st.checkbox("Include patient's medical history")
-        symptoms = st.checkbox("Include patient's symptoms")
-        function_limitations = st.checkbox("Include patient's function limitations")
-        goals = st.checkbox("Include patient's goals for physiotherapy")
-
-        variables = [age, gender, problem, medical_history, symptoms, function_limitations, goals]
-        variable_names = ["Age", "Gender", "Problem", "Medical history", "Symptoms", "Function limitations", "Goals"]
-        variable_text = ", ".join([var for var, check in zip(variable_names, variables) if check])
-
-        full_text = f"{text}. Variables: {variable_text}" if variable_text else text
-
         options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Sam"]
         voice = st.selectbox("Select a voice", options)
 
         if st.form_submit_button("Submit"):
             with st.spinner('Generating story...'):
-                story_text = generate_story(full_text)
+                story_text = generate_story(text)
                 audio = generate_audio(story_text, voice)
 
             st.audio(audio, format='audio/mp3')
@@ -109,15 +90,9 @@ def app():
             for item in images:
                 st.image(item)
 
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font('Arial', 'B', 16)
-            pdf.multi_cell(0, 10, story_text)
-            html = create_download_link(pdf.output(dest="S").encode("latin-1"), "story")
-            st.markdown(html, unsafe_allow_html=True)
-
     if not text or not voice:
         st.info("Please enter a word and select a voice")
+
 
 if __name__ == '__main__':
     app()
