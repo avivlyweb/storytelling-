@@ -1,5 +1,6 @@
 import os
-
+import requests
+from bs4 import BeautifulSoup
 import replicate
 import streamlit as st
 from dotenv import load_dotenv
@@ -13,18 +14,45 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
+# PubMed API parameters
+pubmed_search_endpoint = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+pubmed_fetch_endpoint = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+params = {
+    "db": "pubmed",
+    "retmode": "json",
+    "retmax": 20,
+    "api_key":  "5cd7903972b3a715e29b76f1a15001ce9a08"
+}
+
 llm = OpenAI(temperature=0.9)
 
-def generate_story(text):
-    """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
+def search_pubmed(query):
+    params["term"] = query
+    response = requests.get(pubmed_search_endpoint, params=params)
+    data = response.json()
+    article_ids = data["esearchresult"]["idlist"]
+    return article_ids
+
+def fetch_pubmed(article_ids):
+    params = {
+        "db": "pubmed",
+        "retmode": "xml",
+        "id": ",".join(article_ids)
+    }
+    response = requests.get(pubmed_fetch_endpoint, params=params)
+    soup = BeautifulSoup(response.text, 'xml')
+    articles_data = soup.find_all("PubmedArticle")
+    return articles_data
+
+def generate_story(text, articles_info):
     prompt = PromptTemplate(
-        input_variables=["text"],
-        template=""" 
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
+        input_variables=["text", "articles_info"],
+        template=f""" 
+        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {{text}}. 
         
         Step 1: Brief Introduction of the Patient Scenario
         Collect personal information about the patient, including age, gender, and medical history.
-        
+
         Step 2: Interview and Problem List
         Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
         Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
@@ -46,26 +74,23 @@ def generate_story(text):
 
         Explanation and Justification of Choices:
         Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
-                 """
+
+        Relevant literature: {articles_info}
+        """
     )
     story = LLMChain(llm=llm, prompt=prompt)
     return story.run(text=text)
 
-
 def generate_audio(text, voice):
-    """Convert the generated story to audio using the Eleven Labs API."""
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
 
-
 def generate_images(story_text):
-    """Generate images using the story text using the Replicate API."""
     output = replicate.run(
         "stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf",
         input={"prompt": story_text}
     )
     return output
-
 
 def app():
     st.title("ESPCharlie the story teller")
@@ -82,7 +107,10 @@ def app():
 
         if st.form_submit_button("Submit"):
             with st.spinner('Generating story...'):
-                story_text = generate_story(text)
+                article_ids = search_pubmed(text)
+                articles_data = fetch_pubmed(article_ids)
+                articles_info = " ".join([f'Title: {article.ArticleTitle.string} \n Abstract: {article.Abstract.string}' for article in articles_data])
+                story_text = generate_story(text, articles_info)
                 audio = generate_audio(story_text, voice)
 
             st.audio(audio, format='audio/mp3')
@@ -92,7 +120,6 @@ def app():
 
     if not text or not voice:
         st.info("Please enter a word and select a voice")
-
 
 if __name__ == '__main__':
     app()
