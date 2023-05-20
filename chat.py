@@ -1,8 +1,8 @@
 import os
-
-import replicate
-import streamlit as st
+import requests
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import streamlit as st
 from elevenlabs import generate
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
@@ -15,57 +15,76 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
 llm = OpenAI(temperature=0.9)
 
-def generate_story(text):
-    """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
+# Set up Pubmed API endpoints and query parameters
+pubmed_search_endpoint = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+pubmed_fetch_endpoint = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+params = {
+    "db": "pubmed",
+    "retmode": "json",
+    "retmax": 5,
+    "api_key": "<Your PubMed API Key>"
+}
+
+# Define function to search for articles using Pubmed API
+def search_pubmed(query):
+    params["term"] = f"{query} AND (systematic[sb] OR meta-analysis[pt])"
+    response = requests.get(pubmed_search_endpoint, params=params)
+    data = response.json()
+    article_ids = data["esearchresult"]["idlist"]
+    return article_ids
+
+# Fetch the full details of the articles using Pubmed API
+def fetch_pubmed(article_ids):
+    params = {
+        "db": "pubmed",
+        "retmode": "xml",
+        "id": ",".join(article_ids)
+    }
+    response = requests.get(pubmed_fetch_endpoint, params=params)
+    soup = BeautifulSoup(response.text, 'xml')
+    articles_data = soup.find_all("PubmedArticle")
+    return articles_data
+
+def generate_story(text, articles_info):
     prompt = PromptTemplate(
-        input_variables=["text"],
-        template=""" 
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
-        
-        Step 1: Brief Introduction of the Patient Scenario
-        Collect personal information about the patient, including age, gender, and medical history.
-        
-        Step 2: Interview and Problem List
-        Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
-        Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
+        input_variables=["text", "articles_info"],
+        template="""
+            You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
+            
+            Step 1: Brief Introduction of the Patient Scenario
+            Collect personal information about the patient, including age, gender, and medical history.
+            
+            Step 2: Interview and Problem List
+            Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
+            Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
 
-        Step 3: Assessment Strategy
-        Identify specific assessment goals for the patient and determine the appropriate assessment strategy, including basic testing, special testing, functional testing, and muscle testing.
+            Step 3: Assessment Strategy
+            Identify specific assessment goals for the patient and determine the appropriate assessment strategy, including basic testing, special testing, functional testing, and muscle testing.
 
-        Step 4: Assessment Findings
-        Record assessment findings, including tests and expected outcomes.
+            Step 4: Assessment Findings
+            Record assessment findings, including tests and expected outcomes.
 
-        Step 5: Goals/Actions to Take
-        Formulate SMART goals for the patient and determine appropriate actions to take to achieve these goals.
+            Step 5: Goals/Actions to Take
+            Formulate SMART goals for the patient and determine appropriate actions to take to achieve these goals.
 
-        Step 6: Intervention Plan
-        Develop a comprehensive intervention plan that includes pharmacological and non-pharmacological interventions as appropriate.
+            Step 6: Intervention Plan
+            Develop a comprehensive intervention plan that includes pharmacological and non-pharmacological interventions as appropriate.
 
-        Step 7: Reassessment
-        Identify when and how to evaluate the effectiveness of the intervention plan. Schedule follow-up appointments with the patient to monitor symptoms, function, and quality of life.
+            Step 7: Reassessment
+            Identify when and how to evaluate the effectiveness of the intervention plan. Schedule follow-up appointments with the patient to monitor symptoms, function, and quality of life.
 
-        Explanation and Justification of Choices:
-        Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
-                 """
+            Explanation and Justification of Choices:
+            Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
+
+            Relevant literature: {articles_info}
+        """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(text=text)
-
+    return story.run(text=text, articles_info=articles_info)
 
 def generate_audio(text, voice):
-    """Convert the generated story to audio using the Eleven Labs API."""
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
-
-
-def generate_images(story_text):
-    """Generate images using the story text using the Replicate API."""
-    output = replicate.run(
-        "stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf",
-        input={"prompt": story_text}
-    )
-    return output
-
 
 def app():
     st.title("ESPCharlie the story teller")
@@ -82,17 +101,17 @@ def app():
 
         if st.form_submit_button("Submit"):
             with st.spinner('Generating story...'):
-                story_text = generate_story(text)
+                # Get related articles from PubMed
+                article_ids = search_pubmed(text)
+                articles = fetch_pubmed(article_ids)
+                articles_info = ", ".join([article.find("ArticleTitle").text for article in articles])
+                story_text = generate_story(text, articles_info)
                 audio = generate_audio(story_text, voice)
 
             st.audio(audio, format='audio/mp3')
-            images = generate_images(story_text)
-            for item in images:
-                st.image(item)
 
     if not text or not voice:
         st.info("Please enter a word and select a voice")
-
 
 if __name__ == '__main__':
     app()
