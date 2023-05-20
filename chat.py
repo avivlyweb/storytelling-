@@ -22,10 +22,9 @@ params = {
     "db": "pubmed",
     "retmode": "json",
     "retmax": 5,
-    "api_key": "5cd7903972b3a715e29b76f1a15001ce9a08"
+    "api_key": "your_pubmed_api_key"
 }
 
-# Define function to search for articles using Pubmed API
 def search_pubmed(query):
     params["term"] = f"{query} AND (systematic[sb] OR meta-analysis[pt])"
     response = requests.get(pubmed_search_endpoint, params=params)
@@ -33,7 +32,6 @@ def search_pubmed(query):
     article_ids = data["esearchresult"]["idlist"]
     return article_ids
 
-# Fetch the full details of the articles using Pubmed API
 def fetch_pubmed(article_ids):
     params = {
         "db": "pubmed",
@@ -49,10 +47,10 @@ def generate_story(text, articles_info):
     prompt = PromptTemplate(
         input_variables=["text", "articles_info"],
         template="""
-            You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
+            You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive physiotherapy case study assessment and treatment plan based on the HOAC model using real ebp data based on Pubmed for {text}.
             
             Step 1: Brief Introduction of the Patient Scenario
-            Collect personal information about the patient, including age, gender, and medical history.
+            create and write a  personal information about the patient, including age, gender, and medical history.
             
             Step 2: Interview and Problem List
             Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
@@ -89,6 +87,9 @@ def generate_audio(text, voice):
 def app():
     st.title("ESPCharlie the story teller")
 
+    text = ""
+    voice = ""
+
     with st.form(key='my_form'):
         text = st.text_input(
             "Enter a word to generate a story",
@@ -99,7 +100,7 @@ def app():
         options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Sam"]
         voice = st.selectbox("Select a voice", options)
 
-        if st.form_submit_button("Submit"):
+        if st.form_submit_button("Submit") and text and voice:
             with st.spinner('Generating story...'):
                 # Get related articles from PubMed
                 article_ids = search_pubmed(text)
