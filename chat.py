@@ -22,7 +22,7 @@ params = {
     "db": "pubmed",
     "retmode": "json",
     "retmax": 5,
-    "api_key": "your_pubmed_api_key"
+    "api_key": "5cd7903972b3a715e29b76f1a15001ce9a08"
 }
 
 def search_pubmed(query):
