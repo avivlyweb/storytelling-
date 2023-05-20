@@ -15,7 +15,7 @@ llm = OpenAI(temperature=0.9)
 
 def generate_story(patient_info):
     prompt = PromptTemplate(
-        input_variables=["patient_info"],
+        input_variables={"patient_info": dict},  # Change here
         template=f""" 
         You are an expert AI Physiotherapist named Charlie with a 250 years career experience. For any case studies provided, synthetic data will only be used to support the numeric data and patient information, while the evidence-based practice (EBP) will be based on real research findings.
         You are tasked with completing a comprehensive assessment and treatment plan based on the HOAC model for {patient_info}.
