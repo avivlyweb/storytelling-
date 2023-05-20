@@ -1,10 +1,10 @@
 import os
-import streamlit as st
 from dotenv import load_dotenv
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from elevenlabs import generate
+import streamlit as st
 
 load_dotenv()
 
@@ -13,55 +13,26 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
 llm = OpenAI(temperature=0.9)
 
-
-def generate_story(age, occupation, diagnosis, gender):
-    """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
+def generate_story(patient_info):
     prompt = PromptTemplate(
-        input_variables=["age", "occupation", "diagnosis", "gender"],
-        template="""
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for a patient with the following details:
-        Age: {age}
-        Occupation: {occupation}
-        Diagnosis: {diagnosis}
-        Gender: {gender}
+        input_variables=["patient_info"],
+        template=f""" 
+        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. For any case studies provided, synthetic data will only be used to support the numeric data and patient information, while the evidence-based practice (EBP) will be based on real research findings.
+        You are tasked with completing a comprehensive assessment and treatment plan based on the HOAC model for {patient_info}.
+
+        You will cover areas such as full physiotherapy intake, history taking, assessment, body observation, red flags, special tests, EBP, clinical reasoning, and even treatment planning. In the scope of cultural diversity, you will use NLU and NLP to be empathetic, take into account the personal factors of the patients, internal and external factors, and psychosomatic factors.
         
-        The process should cover full physiotherapy intake, history taking, assessment, body observation, red flags, special tests, EBP, clinical reasoning, and treatment in the scope of cultural diversity. 
+        You will also focus on providing full physiotherapy intervention, home exercises, prevention advice, and work-related problems (ergonomics). Furthermore, you will help with health care seeking questions of the patient and provide study cases and teach students clinical reasoning.
 
-        Step 1: Brief Introduction of the Patient Scenario
-        Collect personal information about the patient, including age, gender, and medical history.
-        
-        Step 2: Interview and Problem List
-        Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
-        Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
-
-        Step 3: Assessment Strategy
-        Identify specific assessment goals for the patient and determine the appropriate assessment strategy, including basic testing, special testing, functional testing, and muscle testing.
-
-        Step 4: Assessment Findings
-        Record assessment findings, including tests and expected outcomes.
-
-        Step 5: Goals/Actions to Take
-        Formulate SMART goals for the patient and determine appropriate actions to take to achieve these goals.
-
-        Step 6: Intervention Plan
-        Develop a comprehensive intervention plan that includes pharmacological and non-pharmacological interventions as appropriate.
-
-        Step 7: Reassessment
-        Identify when and how to evaluate the effectiveness of the intervention plan. Schedule follow-up appointments with the patient to monitor symptoms, function, and quality of life.
-
-        Explanation and Justification of Choices:
-        Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
+        You will use and list the clinimetrics tools, provide synthetic and numeric data when it comes to AROM, PROM, specific medications, patient's family and environmental situation, patient's hobbies, all the information that can have a significant impact on the patient's recovery. You will write in a list the numeric and synthetic data for the test results and outcome based on the case study.
         """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(age=age, occupation=occupation, diagnosis=diagnosis, gender=gender)
-
+    return story.run(patient_info=patient_info)
 
 def generate_audio(text, voice):
-    """Convert the generated story to audio using the Eleven Labs API."""
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
-
 
 def app():
     st.title("ESPCharlie the story teller")
@@ -71,16 +42,20 @@ def app():
         occupation = st.text_input("Enter patient's occupation")
         diagnosis = st.text_input("Enter patient's diagnosis")
         gender = st.text_input("Enter patient's gender")
-        voice = st.selectbox("Select a voice for the story", ["Joanna", "Salli", "Kendra", "Kimberly", "Ivy", "Matthew"])
-        submit_button = st.form_submit_button(label='Generate Story')
+        patient_info = {"age": age, "occupation": occupation, "diagnosis": diagnosis, "gender": gender}
+        
+        options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Sam"]
+        voice = st.selectbox("Select a voice", options)
 
-    if submit_button:
-        with st.spinner("Generating story..."):
-            story = generate_story(age, occupation, diagnosis, gender)
-            audio = generate_audio(story, voice)
-        st.audio(audio, format='audio/ogg')
-        st.write(story)
+        if st.form_submit_button("Submit"):
+            with st.spinner('Generating story...'):
+                story_text = generate_story(patient_info)
+                audio = generate_audio(story_text, voice)
 
+            st.audio(audio, format='audio/mp3')
 
-if __name__ == "__main__":
+    if not age or not occupation or not diagnosis or not gender or not voice:
+        st.info("Please enter all patient details and select a voice")
+
+if __name__ == '__main__':
     app()
