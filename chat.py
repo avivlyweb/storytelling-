@@ -22,7 +22,7 @@ params = {
     "db": "pubmed",
     "retmode": "json",
     "retmax": 5,
-    "api_key": "<Your PubMed API Key>"
+    "api_key": "5cd7903972b3a715e29b76f1a15001ce9a08"
 }
 
 # Define function to search for articles using Pubmed API
