@@ -1,4 +1,4 @@
-import os
+import os 
 import base64
 from fpdf import FPDF
 import replicate
