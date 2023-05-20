@@ -1,10 +1,10 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from elevenlabs import generate
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
+from elevenlabs import generate
 
 load_dotenv()
 
@@ -13,13 +13,20 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
 llm = OpenAI(temperature=0.9)
 
-def generate_story(text):
+
+def generate_story(age, occupation, diagnosis, gender):
     """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
     prompt = PromptTemplate(
-        input_variables=["text"],
-        template=""" 
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
+        input_variables=["age", "occupation", "diagnosis", "gender"],
+        template="""
+        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for a patient with the following details:
+        Age: {age}
+        Occupation: {occupation}
+        Diagnosis: {diagnosis}
+        Gender: {gender}
         
+        The process should cover full physiotherapy intake, history taking, assessment, body observation, red flags, special tests, EBP, clinical reasoning, and treatment in the scope of cultural diversity. 
+
         Step 1: Brief Introduction of the Patient Scenario
         Collect personal information about the patient, including age, gender, and medical history.
         
@@ -44,10 +51,10 @@ def generate_story(text):
 
         Explanation and Justification of Choices:
         Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
-                 """
+        """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(text=text)
+    return story.run(age=age, occupation=occupation, diagnosis=diagnosis, gender=gender)
 
 
 def generate_audio(text, voice):
@@ -55,28 +62,25 @@ def generate_audio(text, voice):
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
 
+
 def app():
     st.title("ESPCharlie the story teller")
 
     with st.form(key='my_form'):
-        text = st.text_input(
-            "Enter a word to generate a story",
-            max_chars=None,
-            type="default",
-            placeholder="Enter a case study subject to generate a Physiotherapy case study",
-        )
-        options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Sam"]
-        voice = st.selectbox("Select a voice", options)
+        age = st.text_input("Enter patient's age")
+        occupation = st.text_input("Enter patient's occupation")
+        diagnosis = st.text_input("Enter patient's diagnosis")
+        gender = st.text_input("Enter patient's gender")
+        voice = st.selectbox("Select a voice for the story", ["Joanna", "Salli", "Kendra", "Kimberly", "Ivy", "Matthew"])
+        submit_button = st.form_submit_button(label='Generate Story')
 
-        if st.form_submit_button("Submit"):
-            with st.spinner('Generating story...'):
-                story_text = generate_story(text)
-                audio = generate_audio(story_text, voice)
+    if submit_button:
+        with st.spinner("Generating story..."):
+            story = generate_story(age, occupation, diagnosis, gender)
+            audio = generate_audio(story, voice)
+        st.audio(audio, format='audio/ogg')
+        st.write(story)
 
-            st.audio(audio, format='audio/mp3')
 
-    if not text or not voice:
-        st.info("Please enter a word and select a voice")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app()
