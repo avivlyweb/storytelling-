@@ -1,6 +1,4 @@
 import os
-
-import replicate
 import streamlit as st
 from dotenv import load_dotenv
 from elevenlabs import generate
@@ -57,16 +55,6 @@ def generate_audio(text, voice):
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
 
-
-def generate_images(story_text):
-    """Generate images using the story text using the Replicate API."""
-    output = replicate.run(
-        "stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf",
-        input={"prompt": story_text}
-    )
-    return output
-
-
 def app():
     st.title("ESPCharlie the story teller")
 
@@ -86,13 +74,9 @@ def app():
                 audio = generate_audio(story_text, voice)
 
             st.audio(audio, format='audio/mp3')
-            images = generate_images(story_text)
-            for item in images:
-                st.image(item)
 
     if not text or not voice:
         st.info("Please enter a word and select a voice")
-
 
 if __name__ == '__main__':
     app()
