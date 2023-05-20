@@ -4,3 +4,4 @@ elevenlabs
 python-dotenv
 streamlit
 openai
+fpdf
