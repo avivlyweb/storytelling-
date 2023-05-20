@@ -4,3 +4,7 @@ elevenlabs
 python-dotenv
 streamlit
 openai
+requests
+beautifulsoup4
+lxml
+xmltodict
