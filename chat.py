@@ -13,9 +13,10 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 
 llm = OpenAI(temperature=0.9)
 
-def generate_story(patient_info):
+def generate_story(age, occupation, diagnosis, gender):
+    patient_info = f"a {age} year old {gender} who is a {occupation} and has been diagnosed with {diagnosis}"
     prompt = PromptTemplate(
-        input_variables=["patient_info"],
+        input_variables=[age, occupation, diagnosis, gender],
         template=f""" 
         You are an expert AI Physiotherapist named Charlie with a 250 years career experience. For any case studies provided, synthetic data will only be used to support the numeric data and patient information, while the evidence-based practice (EBP) will be based on real research findings.
         You are tasked with completing a comprehensive assessment and treatment plan based on the HOAC model for {patient_info}.
@@ -28,7 +29,7 @@ def generate_story(patient_info):
         """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(patient_info=patient_info)
+    return story.run()
 
 def generate_audio(text, voice):
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
@@ -42,14 +43,13 @@ def app():
         occupation = st.text_input("Enter patient's occupation")
         diagnosis = st.text_input("Enter patient's diagnosis")
         gender = st.text_input("Enter patient's gender")
-        patient_info = {"age": age, "occupation": occupation, "diagnosis": diagnosis, "gender": gender}
         
         options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Sam"]
         voice = st.selectbox("Select a voice", options)
 
         if st.form_submit_button("Submit"):
             with st.spinner('Generating story...'):
-                story_text = generate_story(patient_info)
+                story_text = generate_story(age, occupation, diagnosis, gender)
                 audio = generate_audio(story_text, voice)
 
             st.audio(audio, format='audio/mp3')
