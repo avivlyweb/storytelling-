@@ -19,32 +19,35 @@ def generate_story(text):
     prompt = PromptTemplate(
         input_variables=["text"],
         template=""" 
-        You are an expert AI Physiotherapist named Charlie with a 250 years career experience. Write a comprehensive assessment and treatment plan based on the HOAC model for {text}.
-        
-        Step 1: Brief Introduction of the Patient Scenario
-        Collect personal information about the patient, including age, gender, and medical history.
-        
-        Step 2: Interview and Problem List
-        Fill out a RPS form and conduct a comprehensive interview with the patient to identify any patient-identified problems (PIPs) or non-patient-identified problems (NPIPs).
-        Formulate three hypotheses with a problem and target mediator based on this case to guide the assessment process.
+        Hi Aviv, let's get started with our new case study for today.
 
-        Step 3: Assessment Strategy
-        Identify specific assessment goals for the patient and determine the appropriate assessment strategy, including basic testing, special testing, functional testing, and muscle testing.
+        Task 1: Comprehensive Patient History
+        AI, you should gather a comprehensive patient history for {text}, including demographic data, referral diagnosis, and background information on the patient's condition. This information should be synthetic, ensuring no real patient data is used.
 
-        Step 4: Assessment Findings
-        Record assessment findings, including tests and expected outcomes.
+        Task 2: Structured Interview Protocol
+        Conduct a structured interview that covers all relevant areas of {text}'s health, including physical, social, and psychological aspects. 
 
-        Step 5: Goals/Actions to Take
-        Formulate SMART goals for the patient and determine appropriate actions to take to achieve these goals.
+        Task 3: Problem List and Hypotheses
+        Based on the interview, create a problem list for {text}. Generate appropriate hypotheses based on the reported symptoms and physical examination findings.
 
-        Step 6: Intervention Plan
-        Develop a comprehensive intervention plan that includes pharmacological and non-pharmacological interventions as appropriate.
+        Task 4: Assessment Tools and Measurements
+        Identify appropriate assessment tools, including standardized tests and measures, to confirm or rule out the generated hypotheses. Provide numeric and synthetic data based on real evidence-based practice.
 
-        Step 7: Reassessment
-        Identify when and how to evaluate the effectiveness of the intervention plan. Schedule follow-up appointments with the patient to monitor symptoms, function, and quality of life.
+        Task 5: Setting SMART Goals
+        Set short-term and long-term SMART goals for {text} with clear testing criteria to monitor progress and determine whether the goals have been achieved.
 
-        Explanation and Justification of Choices:
-        Explain and justify the choices made in each step of the HOAC model, integrating evidence from relevant literature, guidelines, and other sources to support the choices made.
+        Task 6: Intervention Strategy
+        Develop an intervention strategy that includes both overall tactics and specific techniques related to different hypotheses for {text}.
+
+        Task 7: Reassessment and Follow-up
+        Incorporate reassessment and follow-up into {text}'s treatment plan to track progress and modify the intervention strategy as necessary.
+
+        Task 8: Reflection
+        Reflect on this case, identifying areas for improvement and updating the decision-making process accordingly.
+
+        All of these tasks are to be carried out while considering EBP, clinical reasoning, differential diagnosis, cultural diversity, internal and external factors, and psychosomatic factors. Please ensure patient data is anonymized and include at least 2 relevant references in the report.
+
+        Lastly, create and provide the RPS form and ITE for this case study. Remember, never use the same Patient Profile twice! 
                  """
     )
     story = LLMChain(llm=llm, prompt=prompt)
