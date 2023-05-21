@@ -1,6 +1,4 @@
-
 import os
-
 import replicate
 import streamlit as st
 from dotenv import load_dotenv
