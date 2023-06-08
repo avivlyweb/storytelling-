@@ -18,21 +18,23 @@ def generate_story(text):
     """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
     prompt = PromptTemplate(
         input_variables=["text"],
-        template=""" 
+        template=f""" 
         You are an AI assistant with expertise in physiotherapy. Generate a case study related to {text}. The case study should include the following sections:
 
-        1. Patient Profile: Provide a brief introduction to the patient, including demographic information, medical history, and the reason for seeking physiotherapy.
+        1. Patient Profile: Provide a brief introduction to the patient, including age, gender, profession, medical history, family/environmental situation, hobbies, admission diagnosis, and medical development within the hospital or at home.
 
-        2. Assessment: Describe the process of assessing the patient's condition, including any tests or measurements performed.
+        2. Assessment: Describe the process of assessing the patient's condition, including any tests or measurements performed using clinimetric tools. Provide synthetic and numeric data related to the case.
 
-        3. Diagnosis: Based on the assessment, provide a diagnosis for the patient's condition.
+        3. Diagnosis: Based on the assessment, provide a diagnosis for the patient's condition. Include a differential diagnosis and explanations for why other diagnoses were considered and ruled out.
 
-        4. Treatment Plan: Outline a comprehensive treatment plan for the patient, including specific exercises, therapy modalities, and lifestyle recommendations.
+        4. Treatment Plan: Outline a comprehensive treatment plan for the patient, including specific exercises, therapy modalities, lifestyle recommendations and SMART goals. The plan should consider patient's mobilization and be able to address the identified problems and achieve the desired outcomes.
 
-        5. Expected Outcomes: Discuss the expected outcomes and goals of the treatment plan, including any potential challenges or barriers to success.
+        5. Expected Outcomes and Progress: Discuss the expected outcomes and goals of the treatment plan, including any potential challenges or barriers to success. Monitor the patient's progress and adjust the treatment plan as needed. Reflect on choices, question whether they were the right ones, provide yourself with feedback, and use this experience to learn and improve for future case studies.
 
-        6. Follow-up and Monitoring: Describe how the patient's progress will be monitored and any necessary adjustments to the treatment plan.
-                 """
+        6. Follow-up and Monitoring: Describe how the patient's progress will be monitored and any necessary adjustments to the treatment plan. Write a discharge letter directed towards the primary care physician, considering the patient's social and environmental circumstances as well as their physical condition.
+
+        Remember, always cite your sources and base your decisions on evidence-based practice. Provide RPS form and ITE for the case study and always seek feedback for continuous improvement.
+        """
     )
     story = LLMChain(llm=llm, prompt=prompt)
     return story.run(text=text)
