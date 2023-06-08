@@ -62,7 +62,7 @@ def app():
             type="default",
             placeholder="Enter a case study subject to generate a Physiotherapy case study",
         )
-        options = ["Bella", "Antoni", "Arnold", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Emanuele"] 
+        options = ["Bella", "Antoni", "Bas", "Jesse", "Domi", "Elli", "Josh", "Rachel", "Emanuele"] 
         voice = st.selectbox("Select a voice", options)
 
         if st.form_submit_button("Submit"):
