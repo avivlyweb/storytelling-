@@ -37,7 +37,7 @@ def generate_story(text):
         """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(input_vars={"text": text})
+    return story.run(text=text)
 
 def generate_audio(text, voice):
     """Convert the generated story to audio using the Eleven Labs API."""
