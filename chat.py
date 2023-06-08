@@ -18,7 +18,7 @@ def generate_story(text):
     """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
     prompt = PromptTemplate(
         input_variables=["text"],
-        template=f""" 
+        template=""" 
         You are an AI assistant with expertise in physiotherapy. Generate a case study related to {text}. The case study should include the following sections:
 
         1. Patient Profile: Provide a brief introduction to the patient, including age, gender, profession, medical history, family/environmental situation, hobbies, admission diagnosis, and medical development within the hospital or at home.
@@ -37,14 +37,12 @@ def generate_story(text):
         """
     )
     story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(text=text)
-
+    return story.run(input_vars={"text": text})
 
 def generate_audio(text, voice):
     """Convert the generated story to audio using the Eleven Labs API."""
     audio = generate(text=text, voice=voice, api_key=eleven_api_key)
     return audio
-
 
 def generate_images(story_text):
     """Generate images using the story text using the Replicate API."""
@@ -53,7 +51,6 @@ def generate_images(story_text):
         input={"prompt": story_text}
     )
     return output
-
 
 def app():
     st.title("ESPCharlie the story teller")
@@ -69,18 +66,18 @@ def app():
         voice = st.selectbox("Select a voice", options)
 
         if st.form_submit_button("Submit"):
-            with st.spinner('Generating story...'):
-                story_text = generate_story(text)
-                audio = generate_audio(story_text, voice)
+            if text and voice:
+                with st.spinner('Generating story...'):
+                    story_text = generate_story(text)
+                    audio = generate_audio(story_text, voice)
 
-            st.audio(audio, format='audio/mp3')
-            images = generate_images(story_text)
-            for item in images:
-                st.image(item)
+                st.audio(audio, format='audio/mp3')
+                images = generate_images(story_text)
+                for item in images:
+                    st.image(item)
 
-    if not text or not voice:
-        st.info("Please enter a word and select a voice")
-
+            else:
+                st.info("Please enter a word and select a voice")
 
 if __name__ == '__main__':
     app()
