@@ -1,31 +1,36 @@
-# Story Storm
-Introducing Story Storm, a powerful tool that harnesses the power of OpenAI's GPT-3.5 Turbo API to generate fascinating and engaging stories.
-But we didn't stop there! We wanted to make your story experience even more immersive. That's why we've also integrated the Eleven Labs API to convert your generated story into an audio narration.
-And that's not all! We've also incorporated the replicate API to generate accompanying images for your story. So now, as you listen, you can also see vivid depictions of the story's characters and settings.
+# Storytelling
+
+Introducing **Storytelling**, a dynamic application crafted to create detailed physiotherapy case studies. This app taps into the immense potential of OpenAI's GPT-3 to produce engaging stories. Yet, that's just the tip of the iceberg. We've also integrated the Eleven Labs API, transforming your stories into captivating audio narrations. And to further enhance the experience, the Replicate API is employed to generate vivid images accompanying your story. Dive into a multi-sensory storytelling journey with **Storytelling**.
 
 ## Getting Started
-To get started, clone the repository and install the required dependencies:
 
+Jump right in with these steps:
 
-```git clone https://github.com/peterw/StoryStorm.git```
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/avivlyweb/storytelling-.git
+    ```
 
-```cd Story_storm```
+2. Move into the directory:
+    ```bash
+    cd storytelling-
+    ```
 
-```pip install -r requirements.txt```
+3. Install the dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## Prerequisites
-You will need to set up API keys for[OpenAI](https://platform.openai.com/account/api-keys),[Eleven Labs ](https://beta.elevenlabs.io/speech-synthesis) [Replicate](https://replicate.com/account/api-tokens). 
+
+Before getting started with **Storytelling**, ensure you have:
+
+- API keys for OpenAI, Eleven Labs, and Replicate.
+- These keys should be placed inside a `.env` file in the root directory of the project. Remember, always keep your `.env` confidential and never commit or share it.
 
 ## Usage
-To run the program, simply run the following command in the terminal:
 
-```streamlit run chat.py```
+Launch **Storytelling** with:
 
-Then enter a word and select a voice to generate a story.
-
-## Sponsers
-
-✨ Learn to build projects like this one (early bird discount): [BuildFast Course ](https://www.buildfastcourse.com/)
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+streamlit run chat.py
