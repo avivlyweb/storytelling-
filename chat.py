@@ -2,8 +2,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from elevenlabs import generate
-from langchain import PromptTemplate
-from langchain.chains import LLMChain
+from langchain import PromptTemplate, StreamlitCallbackHandler
 from langchain.llms import OpenAI
 
 load_dotenv()
@@ -14,31 +13,19 @@ eleven_api_key = os.getenv("ELEVEN_API_KEY")
 llm = OpenAI(temperature=0.9)
 
 def generate_story(text):
-    """Generate a physiotherapy case study using the langchain library and OpenAI's GPT-3 model."""
-    prompt = PromptTemplate(
-        input_variables=["text"],
-        template=""" 
-        You are an AI physiotherapist named Charlie. Analyze and generate a physiotherapy case study related to {text}.
+    """Generate a physiotherapy case study using the LangChain and OpenAI's GPT-3 model."""
+    
+    template = f"""
+    You are an AI physiotherapist named Charlie. Analyze and generate a physiotherapy case study related to {text}.
+    ...
 
-        **Patient Profile**: Briefly describe the patient's background and medical history.
-
-        **Assessment**: Detail your initial assessment and findings.
-
-        **Diagnosis**: Based on your assessment, provide a diagnosis and formulate hypotheses.
-
-        **Treatment Goals**: Establish treatment goals linked to your findings.
-
-        **Intervention Plan**: Outline an intervention plan and explain the reasons for your choices.
-
-        **Expected Outcomes**: Describe the anticipated outcomes and how you'll monitor progress.
-
-        **Reflection**: Reflect on your choices and consider any necessary adjustments. 
-
-        Always base your decisions on evidence-based practice and seek continuous feedback.
-        """
-    )
-    story = LLMChain(llm=llm, prompt=prompt)
-    return story.run(text=text)
+    Always base your decisions on evidence-based practice and seek continuous feedback.
+    """
+    
+    st_callback = StreamlitCallbackHandler(st.container())
+    story = llm.run(template, callbacks=[st_callback])
+    
+    return story
 
 def generate_audio(text, voice):
     """Convert the generated story to audio using the Eleven Labs API."""
